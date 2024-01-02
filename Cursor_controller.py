@@ -193,7 +193,7 @@ def main():
 
     cap = cv.VideoCapture(0)                                      # 640 x 480 -> resize after
     detector = ht.handDetector(max_num_hands=1)
-    screen_width, screen_height = get_monitors()[0].width, get_monitors()[0].height
+    screen_width, screen_height = get_monitors()[0].__width, get_monitors()[0].height
 
     while True:
         success, img = cap.read()
