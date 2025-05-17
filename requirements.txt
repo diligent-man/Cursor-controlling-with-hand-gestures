@@ -1,0 +1,7 @@
+pynput==1.8.1
+numpy==1.26.4
+autopy==4.0.1
+screeninfo==0.8.1
+mediapipe==0.10.21
+python-dotenv==1.1.0
+opencv-contrib-python==4.11.0.86

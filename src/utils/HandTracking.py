@@ -4,6 +4,7 @@ import time
 import math
 import numpy as np
 
+
 '''
 mp_drawing.draw_landmarks(
     image
@@ -14,7 +15,7 @@ mp_drawing.draw_landmarks(
 )
 '''
 class handDetector():
-    def __init__(self, static_image_mode=False, max_num_hands=2, model_complexity=1,
+    def __init__(self, static_image_mode=False, max_num_hands=1, model_complexity=1,
                  min_detection_confidence=.5, min_tracking_confidence=0.7):
         self.static_image_mode = static_image_mode
         self.max_num_hands = max_num_hands
