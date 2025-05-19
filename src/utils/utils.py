@@ -1,5 +1,5 @@
 import time
-from typing import List
+from typing import Tuple
 
 
 import autopy
@@ -11,31 +11,12 @@ from screeninfo import get_monitors, Monitor
 
 
 __all__ = [
-    "calculate_FPS",
-    # "resize_img",
     "control_region",
     "find_distance",
     "cursor_control",
     "get_primary_monitor_info",
+    "get_screen_center_origin",
 ]
-
-
-def calculate_FPS(previous_time: float):
-    current_time = time.time()
-    fps = 1 / (current_time - previous_time)
-    previous_time = current_time
-    return previous_time, fps
-
-
-# def resize_img(img: np.ndarray,
-#                screen_width: int,
-#                screen_height: int,
-#                scale_factor: float = 1.,
-#                interpolation: cv.InterpolationFlags = cv.INTER_CUBIC
-#                ) -> Tuple[np.ndarray, int, int]:
-#     new_w, new_h = int(screen_width*scale_factor), int(screen_height*scale_factor)
-#     img = cv.resize(img, (new_w, new_h), interpolation=interpolation)
-#     return img, new_w, new_h
 
 
 def control_region(img, frame_reduction_x, frame_reduction_y, resized_width, resized_height):
@@ -202,3 +183,15 @@ def get_primary_monitor_info() -> Monitor:
         if monitor.is_primary:
             return_monitor = monitor
     return return_monitor
+
+
+def get_screen_center_origin(img_size: Tuple[int, int]) -> Tuple[int, int]:
+    """
+    :param img_size: (width, height) of image
+    """
+    window_width, window_height = img_size[0], img_size[1]
+
+    screen = get_primary_monitor_info()
+    x = int((screen.width / 2) - (window_width / 2))
+    y = int((screen.height / 2) - (window_height / 2))
+    return x, y

@@ -58,10 +58,10 @@ class HandDetectorResult:
             converted_hand_landmarks.landmark.extend(
                 [
                     pb2_NormalizedLandmark(
-                        x=hand_landmarks.x,
-                        y=hand_landmarks.y,
-                        z=hand_landmarks.z,
-                    ) for hand_landmarks in hand_landmarks
+                        x=landmarks.x,
+                        y=landmarks.y,
+                        z=landmarks.z,
+                    ) for landmarks in hand_landmarks
                 ]
             )
             converted_hand_landmarks_lst.append(converted_hand_landmarks)

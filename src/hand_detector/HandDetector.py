@@ -18,21 +18,10 @@ from mediapipe.tasks.python.vision.hand_landmarker import (
 from .HandDetectorResult import HandDetectorResult
 
 __all__ = ["HandDetector"]
-
-
 __package__ = pathlib.Path(__file__).parent.resolve()
 
 
 class HandDetector(object):
-    """
-    mp_drawing.draw_landmarks(
-        image
-        landmark_list: mediapipe.framework.formats.landmark_pb2.NormalizedLandmarkList,
-        connections: Optional[List[Tuple[int, int]]] = None,
-        landmark_drawing_spec: mediapipe.python.solutions.drawing_utils.DrawingSpec = DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2),
-        connection_drawing_spec: mediapipe.python.solutions.drawing_utils.DrawingSpec = DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=2),
-    )
-    """
     __default_ckpt: str = os.path.join(__package__, "..", "models", "hand_landmarker.task")
     __finger_tip_idx = [4, 8, 12, 16, 20]
 
@@ -54,7 +43,7 @@ class HandDetector(object):
                  return_fm: str = "bgr"
                  ):
         assert return_fm in ("rgb", "bgr"), ValueError
-
+        super(HandDetector, self).__init__()
         self.__opts: HandLandmarkerOptions = HandLandmarkerOptions(
             base_options=base_options if base_options is not None else BaseOptions(self.__default_ckpt, None, 0),
             running_mode=running_mode,
