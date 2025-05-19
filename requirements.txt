@@ -1,5 +1,4 @@
 pynput==1.8.1
-numpy==1.26.4
 autopy==4.0.1
 screeninfo==0.8.1
 mediapipe==0.10.21

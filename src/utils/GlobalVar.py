@@ -10,8 +10,7 @@ __all__ = [
 
 @dataclass
 class GlobalVar(object):
-    # Used to calculate frame rate
-    PREVIOUS_TIME: int
+    SCALE_FACTOR: float
 
     # Used for cursor movement smoothening
     PREVIOUS_X: int
@@ -23,10 +22,12 @@ class GlobalVar(object):
     FRAME_REDUCTION_Y: int
 
     def __init__(self):
-        _vars: List[str] = ["PREVIOUS_TIME", "PREVIOUS_X", "PREVIOUS_Y",
-                            "SMOOTHEN_FACTOR", "FRAME_REDUCTION_X", "FRAME_REDUCTION_Y"]
-        _dtypes: List[Callable] = [int, int, int, float, int, int]
-        _defaults: List[Any] = [0, 0, 0, 10, 550, 300]
+        super(GlobalVar, self).__init__()
+        _vars: List[str] = ["SCALE_FACTOR", "PREVIOUS_X", "PREVIOUS_Y",
+                            "SMOOTHEN_FACTOR", "FRAME_REDUCTION_X", "FRAME_REDUCTION_Y"
+                            ]
+        _dtypes: List[Callable] = [float, int, int, float, int, int]
+        _defaults: List[Any] = [1., 0, 0, 10, 550, 300]
 
         for i in range(len(_vars)):
             read_var: None | str = os.environ.get(_vars[i], None)
