@@ -1,4 +1,5 @@
 import os
+import pathlib
 from queue import Queue
 
 import cv2 as cv
@@ -16,8 +17,10 @@ from mediapipe.tasks.python.vision.hand_landmarker import (
 
 from .HandDetectorResult import HandDetectorResult
 
-
 __all__ = ["HandDetector"]
+
+
+__package__ = pathlib.Path(__file__).parent.resolve()
 
 
 class HandDetector(object):
@@ -30,7 +33,7 @@ class HandDetector(object):
         connection_drawing_spec: mediapipe.python.solutions.drawing_utils.DrawingSpec = DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=2),
     )
     """
-    __default_ckpt: str = os.path.join(os.getcwd(), "src", "models", "hand_landmarker.task")
+    __default_ckpt: str = os.path.join(__package__, "..", "models", "hand_landmarker.task")
     __finger_tip_idx = [4, 8, 12, 16, 20]
 
     __result_queue: Queue[HandDetectorResult] = Queue()

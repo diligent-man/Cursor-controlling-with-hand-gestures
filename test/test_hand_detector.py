@@ -1,29 +1,35 @@
+import time
+
 import cv2 as cv
+from mediapipe.tasks.python.vision.core.vision_task_running_mode import VisionTaskRunningMode as VMode
 
-from src.utils.FPSCalculator import FPSCalculator
-from src.utils.HandDetector import HandDetector
+from src.hand_detector import HandDetector, HandDetectorResult, HandLandMarkVisualizer
 
 
-def main():
-    cap: cv.VideoCapture = cv.VideoCapture(0)
-    detector: HandDetector = HandDetector()
-    fps_calculator = FPSCalculator()
+def main() -> None:
+    detector: HandDetector = HandDetector(num_hands=2, running_mode=VMode.LIVE_STREAM)
+    visualizer: HandLandMarkVisualizer = HandLandMarkVisualizer()
+
+    cap: cv.VideoCapture = cv.VideoCapture(0)  # default resolution: 640 x 480 -> resize after
 
     while cap.isOpened():
-        success, img = cap.read()
-        img = detector.detect(img)
-        landmarks_lst, bbox = detector.findPosition(img)
+        _, frame = cap.read()
 
-        # Check thumb tip
-        # if len(landmarks_lst) != 0:
-        #     print(landmarks_lst[4])
+        detector.detect(frame, int(time.time() * 1000))
+        detected_result: HandDetectorResult = detector.get_result()
 
-        cv.putText(img, f"FPS {int(fps_calculator())}", (10, 35), cv.FONT_HERSHEY_PLAIN, 1, (255, 255, 0), 1, cv.LINE_AA)
-        cv.imshow("Image", img)
+        frame = visualizer(
+            detected_result.img,
+            detected_result.hand_landmarker_result.handedness,
+            detected_result.hand_landmarker_result.hand_landmarks,
+        )
+
+        cv.imshow("Image", frame)
 
         k = cv.waitKey(1)
         if k == ord("q"):
             exit()
+    return None
 
 
 if __name__ == "__main__":
