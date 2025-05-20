@@ -2,6 +2,7 @@ import time
 
 
 import cv2 as cv
+import numpy as np
 
 from screeninfo import Monitor
 from dotenv import load_dotenv
@@ -24,6 +25,8 @@ from src.hand_detector import (
 
 load_dotenv("./.env")
 
+from mediapipe.python.solutions.hands import Hands
+
 
 def main() -> None:
     gl: GlobalVar = GlobalVar()
@@ -33,17 +36,16 @@ def main() -> None:
     kb_controller: kbController = kbController()
 
     visualizer: HandLandMarkVisualizer = HandLandMarkVisualizer()
-    detector: HandDetector = HandDetector(None, VMode.LIVE_STREAM, 1)
+    detector: HandDetector = HandDetector(None, VMode.LIVE_STREAM, 1, is_mirrored=gl.IS_MIRRORED)
 
     cap: cv.VideoCapture = cv.VideoCapture(0)  # 640 x 480
     while cap.isOpened():
         _, frame = cap.read()
 
-        # img = cv.flip(img, 1)
         detector.detect(frame, int(time.time() * 1000))
         detected_result: HandDetectorResult = detector.get_result()
 
-        frame = visualizer(
+        frame: np.ndarray = visualizer(
             detected_result.img,
             detected_result.hand_landmarker_result.handedness,
             detected_result.hand_landmarker_result.hand_landmarks,
@@ -55,12 +57,10 @@ def main() -> None:
         # landmarks_lst, bounding_box = detector.findPosition(img)  # Getting position of hand
         # print(landmarks_lst, bounding_box)
 
-        # if len(landmarks_lst) != 0:
-        #     # Checking if fingers are upwards
-        #     fingers, total_fingers = detector.fingersUp()
-        #     cv.putText(img, 'Fingers: ' + str(int(total_fingers)), (20, 70), cv.FONT_HERSHEY_PLAIN, 2, (255, 255, 0), 2,
-        #                cv.LINE_AA)
-        #     # print(fingers)
+        # Checking if fingers are upwards
+        # fingers, total_fingers = detector.fingersUp()
+
+        # print(fingers)
         #
         #     # Draw control region cursor
         #     control_region(img,

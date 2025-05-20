@@ -10,6 +10,7 @@ __all__ = [
 
 @dataclass
 class GlobalVar(object):
+    IS_MIRRORED: bool
     WINDOW_NAME: str
     SCALE_FACTOR: float
 
@@ -25,11 +26,12 @@ class GlobalVar(object):
     def __init__(self):
         super(GlobalVar, self).__init__()
         _vars: List[str] = [
+            "IS_MIRRORED",
             "WINDOW_NAME", "SCALE_FACTOR", "PREVIOUS_X", "PREVIOUS_Y",
             "SMOOTHEN_FACTOR", "FRAME_REDUCTION_X", "FRAME_REDUCTION_Y"
         ]
-        _dtypes: List[Callable] = [str, float, int, int, float, int, int]
-        _defaults: List[Any] = [f"{None}", 1., 0, 0, 10, 550, 300]
+        _dtypes: List[Callable] = [bool, str, float, int, int, float, int, int]
+        _defaults: List[Any] = [True, f"{None}", 1., 0, 0, 10, 550, 300]
 
         for i in range(len(_vars)):
             read_var: None | str = os.environ.get(_vars[i], None)

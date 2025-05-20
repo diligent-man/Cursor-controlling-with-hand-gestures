@@ -24,6 +24,7 @@ __package__ = pathlib.Path(__file__).parent.resolve()
 class HandDetector(object):
     __default_ckpt: str = os.path.join(__package__, "..", "models", "hand_landmarker.task")
     __finger_tip_idx = [4, 8, 12, 16, 20]
+    __is_mirrored: bool = True
 
     __result_queue: Queue[HandDetectorResult] = Queue()
 
@@ -40,7 +41,8 @@ class HandDetector(object):
                  min_hand_detection_confidence: float = .5,
                  min_hand_presence_confidence: float = .5,
                  min_tracking_confidence: float = 0.5,
-                 return_fm: str = "bgr"
+                 return_fm: str = "bgr",
+                 is_mirrored: bool = True
                  ):
         assert return_fm in ("rgb", "bgr"), ValueError
         super(HandDetector, self).__init__()
@@ -56,6 +58,7 @@ class HandDetector(object):
 
         self.__hand_detector = HandLandmarker.create_from_options(self.__opts)
         self.__return_fm = return_fm
+        self.__is_mirrored = is_mirrored
 
     def get_result(self) -> HandDetectorResult:
         return self.__result_queue.get()
@@ -66,13 +69,23 @@ class HandDetector(object):
         detected_result: HandDetectorResult = HandDetectorResult(
             detected_result,
             rgb_img if self.__return_fm == "rgb" else cv.cvtColor(rgb_img, cv.COLOR_BGR2RGB),
-            timestamp_ms
+            timestamp_ms,
+            self.__is_mirrored
         )
 
         detected_result.__post_init__()
         self.__result_queue.put(detected_result)
 
     def detect(self, img: np.ndarray, timestamp_ms: int = None) -> None:
+        """
+        :param img: input image to perform detection upon
+        :param timestamp_ms: frame timestamp
+        :return: "bgr" | "rgb" image and detected corresponding landmarks in result_queue field,
+                 which is retrieved via get_result() method
+        """
+        if self.__is_mirrored:
+            img = cv.flip(img, 1)
+
         rgb_img: Image = Image(image_format=ImageFormat.SRGB, data=cv.cvtColor(img, cv.COLOR_BGR2RGB))
 
         if self.__opts.running_mode in (VMode.IMAGE, VMode.VIDEO):
@@ -85,7 +98,8 @@ class HandDetector(object):
             detected_result: HandDetectorResult = HandDetectorResult(
                 detected_result,
                 np.copy(rgb_img.numpy_view()) if self.__return_fm == "rgb" else img,
-                timestamp_ms
+                timestamp_ms,
+                self.__is_mirrored
             )
             detected_result.__post_init__()
             self.__result_queue.put(detected_result)
@@ -93,38 +107,11 @@ class HandDetector(object):
             assert timestamp_ms is not None, ValueError
             self.__hand_detector.detect_async(rgb_img, timestamp_ms)
 
-    # Find position of hand from input frame
-    # def findPosition(self, img, handNo=0, draw=True):
-    #     xList = []
-    #     yList = []
-    #     bounding_box = []
-    #     self.landmarks_lst = []
-    #
-    #     if self.__det_result.multi_hand_landmarks:
-    #         my_hand = self.__det_result.multi_hand_landmarks[handNo]
-    #         for id, lm in enumerate(my_hand.landmark):
-    #             # id: index
-    #             # lm: normalized landmark coordinate (x.y) with x,y in [0,1]
-    #             height, width, channels = img.shape
-    #             # find centroid of an img
-    #             cx, cy = int(lm.x * width), int(lm.y * height) # rescale proportional to the sesized resolution
-    #             xList.append(cx)
-    #             yList.append(cy)
-    #             self.landmarks_lst.append([id, cx, cy])
-    #             if draw:
-    #                 pink = (255, 0, 255)
-    #                 cv.circle(img, (cx, cy), 3, pink, cv.FILLED)
-    #
-    #         xmin, xmax = min(xList), max(xList)
-    #         ymin, ymax = min(yList), max(yList)
-    #         bounding_box = xmin, ymin, xmax, ymax
-    #         if draw:
-    #             cv.rectangle(img, (xmin - 20, ymin - 20), (xmax + 20, ymax + 20),
-    #                           (0, 255, 0), 2)
-    #     return self.landmarks_lst, bounding_box
-
     # Checks which fingers are up
-    # def fingersUp(self):
+    # def fingersUp(self, frame: np.ndarray, hand_landmarks_lst):
+    #     # cv.putText(frame, 'Fingers: ' + str(int(total_fingers)), (20, 70), cv.FONT_HERSHEY_PLAIN, 2, (255, 255, 0), 2,
+    #     #            cv.LINE_AA)
+    #
     #     # Landmark ref: https://user-images.githubusercontent.com/37477845/102242918-ed328c80-3f3d-11eb-907c-61ba05678d54.png
     #     fingers = []
     #     # Thumb check
@@ -155,3 +142,33 @@ class HandDetector(object):
     #
     #     total_fingers = fingers.count(1)
     #     return fingers, total_fingers
+
+    # Find position of hand from input frame
+    # def findPosition(self, img, handNo=0, draw=True):
+    #     xList = []
+    #     yList = []
+    #     bounding_box = []
+    #     self.landmarks_lst = []
+    #
+    #     if self.__det_result.multi_hand_landmarks:
+    #         my_hand = self.__det_result.multi_hand_landmarks[handNo]
+    #         for id, lm in enumerate(my_hand.landmark):
+    #             # id: index
+    #             # lm: normalized landmark coordinate (x.y) with x,y in [0,1]
+    #             height, width, channels = img.shape
+    #             # find centroid of an img
+    #             cx, cy = int(lm.x * width), int(lm.y * height) # rescale proportional to the sesized resolution
+    #             xList.append(cx)
+    #             yList.append(cy)
+    #             self.landmarks_lst.append([id, cx, cy])
+    #             if draw:
+    #                 pink = (255, 0, 255)
+    #                 cv.circle(img, (cx, cy), 3, pink, cv.FILLED)
+    #
+    #         xmin, xmax = min(xList), max(xList)
+    #         ymin, ymax = min(yList), max(yList)
+    #         bounding_box = xmin, ymin, xmax, ymax
+    #         if draw:
+    #             cv.rectangle(img, (xmin - 20, ymin - 20), (xmax + 20, ymax + 20),
+    #                           (0, 255, 0), 2)
+    #     return self.landmarks_lst, bounding_box

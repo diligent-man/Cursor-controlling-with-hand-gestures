@@ -1,12 +1,13 @@
 import cv2 as cv
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Mapping
 
 
 # legacy api
 from mediapipe.framework.formats import landmark_pb2
 from mediapipe.python.solutions.drawing_utils import draw_landmarks
 from mediapipe.python.solutions.drawing_styles import (
+    DrawingSpec,
     get_default_hand_landmarks_style,
     get_default_hand_connections_style
 )
@@ -28,10 +29,10 @@ class HandLandMarkVisualizer(object):
     __FONT_THICKNESS: int = 1
     __LINE_TYPE: int = cv.LINE_AA
 
-    __FPS_TEXT_COLOR: Tuple[int, int, int] = (255, 255, 0)  # cyan
+    __FPS_TEXT_COLOR: Tuple[int, int, int] = (255, 255, 0)  # cyan, channel order: BGR
 
     __HANDEDNESS_MARGIN: int = 10
-    __HANDEDNESS_TEXT_COLOR: Tuple[int, int, int] = (88, 205, 54)  # vibrant green
+    __HANDEDNESS_TEXT_COLOR: Tuple[int, int, int] = (0, 0, 255)  # red, channel order: BGR
 
     # Adapt new api for old draw_landmarks api
     __HAND_CONNECTIONS = HandLandmarksConnections.HAND_CONNECTIONS = [
@@ -58,8 +59,10 @@ class HandLandMarkVisualizer(object):
         text_y = int(min(y_coordinates) * height) - self.__HANDEDNESS_MARGIN
 
         # Draw handedness (left or right hand) on the image.
+        text: str = f"{handedness[0].category_name}"
+
         cv.putText(img,
-                   f"{handedness[0].category_name}",
+                   text,
                    (text_x, text_y),
                    self.__FONT,
                    self.__FONT_SIZE,
@@ -76,8 +79,8 @@ class HandLandMarkVisualizer(object):
                  include_handedness: bool = True,
                  include_landmarks: bool = True,
                  *,
-                 hand_landmarks_style=get_default_hand_landmarks_style(),
-                 hand_connections_style=get_default_hand_connections_style()
+                 hand_landmarks_style: Mapping[int, DrawingSpec] = get_default_hand_landmarks_style(),
+                 hand_connections_style: Mapping[Tuple[int, int], DrawingSpec] = get_default_hand_connections_style()
                  ) -> np.ndarray:
         if len(hand_landmarks_lst) > 0:
             # Loop through list of detected hands and landmarks.

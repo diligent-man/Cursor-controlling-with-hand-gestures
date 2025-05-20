@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Dict
 from dataclasses import dataclass
+
 
 import numpy as np
 
@@ -28,23 +29,27 @@ class HandDetectorResult:
                  result: HandLandmarkerResult = None,
                  img: np.ndarray = None,
                  ts: int = None,
+                 is_mirrored: bool = True,
                  to_normalized_landmark_lst: bool = True
                  ) -> None:
         self.hand_landmarker_result = result
         self.img = img
         self.ts = ts
+        self.__is_mirrored: bool = is_mirrored
         self.__to_normalized_landmark_lst: bool = to_normalized_landmark_lst
 
     def __post_init__(self) -> None:
         if self.__to_normalized_landmark_lst and self.hand_landmarker_result is not None:
             self._to_normalized_landmark_lst()
 
+            if self.__is_mirrored:
+                self._reflip()
+
     def _to_normalized_landmark_lst(self) -> None:
         """
-        convert List[List[landmark_module.NormalizedLandmark]] into List[NormalizedLandmarkList]
-        for using legacy drawing_utils. Check src/utils/drawing_utils.py
-
-        src of NormalizedLandmarkList(): https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/framework/formats/landmark.proto
+        :return: convert List[List[landmark_module.NormalizedLandmark]] into List[NormalizedLandmarkList]
+                 for using legacy drawing_utils. Check src/utils/drawing_utils.py.
+                 src of NormalizedLandmarkList(): https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/framework/formats/landmark.proto
         Note: visibility, presence fields are also ignored cuz it belongs to legacy api
         """
         pb2_NormalizedLandmark: landmark_pb2.NormalizedLandmark = landmark_pb2.NormalizedLandmark
@@ -66,3 +71,15 @@ class HandDetectorResult:
             )
             converted_hand_landmarks_lst.append(converted_hand_landmarks)
         self.hand_landmarker_result.hand_landmarks = converted_hand_landmarks_lst
+
+    def _reflip(self) -> None:
+        """
+        :return: re-flip handedness result
+        """
+        flipped_right: Dict[str, str] = {"Right": "Left"}
+        flipped_left: Dict[str, str] = {"Left": "Right"}
+
+        for handedness in self.hand_landmarker_result.handedness:
+            for i in handedness:
+                i.display_name = flipped_right.get(i.display_name) or flipped_left.get(i.display_name)
+                i.category_name = flipped_right.get(i.category_name) or flipped_left.get(i.category_name)
