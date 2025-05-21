@@ -29,7 +29,8 @@ class HandLandMarkVisualizer(object):
     __FONT_THICKNESS: int = 1
     __LINE_TYPE: int = cv.LINE_AA
 
-    __FPS_TEXT_COLOR: Tuple[int, int, int] = (255, 255, 0)  # cyan, channel order: BGR
+    # __FPS_TEXT_COLOR: Tuple[int, int, int] = (255, 255, 0)  # cyan, channel order: BGR
+    __FPS_TEXT_COLOR: Tuple[int, int, int] = (0, 0, 255)  # cyan, channel order: BGR
 
     __HANDEDNESS_MARGIN: int = 10
     __HANDEDNESS_TEXT_COLOR: Tuple[int, int, int] = (0, 0, 255)  # red, channel order: BGR

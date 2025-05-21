@@ -82,8 +82,6 @@ def run_with_live_video(gl: GlobalVar,
                         detector: HandDetector,
                         visualizer: HandLandMarkVisualizer,
                         ) -> None:
-    detector: HandDetector = HandDetector(num_hands=2, running_mode=VMode.LIVE_STREAM)
-    visualizer: HandLandMarkVisualizer = HandLandMarkVisualizer()
     cap: cv.VideoCapture = cv.VideoCapture(0)  # default resolution: 640 x 480 -> resize after
 
     cv.namedWindow(gl.WINDOW_NAME, cv.WINDOW_AUTOSIZE)
