@@ -1,5 +1,6 @@
 import asyncio
 
+import cv2 as cv
 from dotenv import load_dotenv
 from mediapipe.tasks.python.vision.core.vision_task_running_mode import VisionTaskRunningMode as VMode
 
@@ -17,10 +18,11 @@ async def main():
     global gl
 
     app = App(
-        HandDetector(None, VMode.VIDEO, 2, is_mirrored=gl.IS_MIRRORED)
+        HandDetector(None, VMode.LIVE_STREAM, 2, is_mirrored=gl.IS_MIRRORED)
     )
 
-    await app.run("video", "./test/data/hand_detector/one_hand.mp4")
+    # await app.run("video", "./test/data/hand_detector/one_hand.mp4")
+    await app.run("live_stream", 0)
 
 
 if __name__ == "__main__":
