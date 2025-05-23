@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
-from typing import List, Tuple, Mapping
 
+from typing import List, Tuple, Mapping, Iterator
 
 # legacy api
 from mediapipe.framework.formats import landmark_pb2
@@ -15,7 +15,8 @@ from mediapipe.python.solutions.drawing_styles import (
 # new api
 from mediapipe.tasks.python.components.containers.category import Category
 
-
+from ..utils.GlobalVar import GlobalVar
+from ..utils import get_bbox_from_landmarks
 from ..utils.FPSCalculator import FPSCalculator
 from .HandLandmarksConnections import HandLandmarksConnections
 
@@ -23,70 +24,74 @@ from .HandLandmarksConnections import HandLandmarksConnections
 __all__ = ["HandLandMarkVisualizer"]
 
 
+gl = globals().get("gl", GlobalVar())
+
+
 class HandLandMarkVisualizer(object):
-    __FONT: int = cv.FONT_HERSHEY_PLAIN
-    __FONT_SIZE: int = 1
-    __FONT_THICKNESS: int = 1
-    __LINE_TYPE: int = cv.LINE_AA
+    __HANDEDNESS_FONT: int = gl.HANDEDNESS_FONT
+    __HANDEDNESS_FONT_SIZE: int = gl.HANDEDNESS_FONT_SIZE
+    __HANDEDNESS_TEXT_COLOR: Tuple[int, int, int] = gl.HANDEDNESS_TEXT_COLOR
+    __HANDEDNESS_FONT_THICKNESS: int = gl.HANDEDNESS_FONT_THICKNESS
+    __HANDEDNESS_LINE_TYPE: int = gl.HANDEDNESS_LINE_TYPE
 
-    # __FPS_TEXT_COLOR: Tuple[int, int, int] = (255, 255, 0)  # cyan, channel order: BGR
-    __FPS_TEXT_COLOR: Tuple[int, int, int] = (0, 0, 255)  # cyan, channel order: BGR
+    __HAND_BBOX_COLOR: Tuple[int, int, int] = gl.HAND_BBOX_COLOR
+    __HAND_BBOX_THICKNESS = gl.HAND_BBOX_THICKNESS
+    __HAND_BBOX_LINE_TYPE = gl.HAND_BBOX_LINE_TYPE
 
-    __HANDEDNESS_MARGIN: int = 10
-    __HANDEDNESS_TEXT_COLOR: Tuple[int, int, int] = (0, 0, 255)  # red, channel order: BGR
+    __PALM_BBOX_COLOR: Tuple[int, int, int] = gl.PALM_BBOX_COLOR
+    __PALM_BBOX_THICKNESS = gl.PALM_BBOX_THICKNESS
+    __PALM_BBOX_LINE_TYPE = gl.PALM_BBOX_LINE_TYPE
+
+    __FPS_ORIG: Tuple[float, float] = gl.FPS_ORIG
+    __FPS_FONT: int = gl.FPS_FONT
+    __FPS_FONT_SIZE: int = gl.FPS_FONT_SIZE
+    __FPS_TEXT_COLOR: Tuple[int, int, int] = gl.FPS_TEXT_COLOR
+    __FPS_FONT_THICKNESS: int = gl.FPS_FONT_THICKNESS
+    __FPS_LINE_TYPE: int = gl.FPS_LINE_TYPE
+
+    __BBOX_MARGIN: int = gl.BBOX_MARGIN
+    __PALM_MARGIN: int = gl.PALM_MARGIN
+
+    __fps_calculator: FPSCalculator = FPSCalculator()
 
     # Adapt new api for old draw_landmarks api
-    __HAND_CONNECTIONS = HandLandmarksConnections.HAND_CONNECTIONS = [
+    __HAND_CONNECTIONS: List[Tuple[int, int]] = [
         (con.start, con.end) for con in HandLandmarksConnections.HAND_CONNECTIONS
     ]
 
-    def __init__(self, legacy_mediapipe_api: bool = True) -> None:
+    __PALM_IDX: List[int] = [0, 1, 5, 9, 13, 17]
+
+    def __init__(self,
+                 legacy_mediapipe_api: bool = True,
+                 include_fps: bool = True,
+                 include_handedness: bool = True,
+                 include_landmarks: bool = True,
+                 include_hand_bbox: bool = True,
+                 include_palm_bbox: bool = True
+                 ) -> None:
         super(HandLandMarkVisualizer, self).__init__()
-        self.__fps_calculator: FPSCalculator = FPSCalculator()
         self.__legacy_mediapipe_api: bool = legacy_mediapipe_api
-
-    def __draw_handedness(self,
-                          img: np.ndarray,
-                          handedness: List[Category],
-                          hand_landmarks: landmark_pb2.NormalizedLandmarkList
-                          ):
-        # Get the top left corner of the detected hand's bounding box.
-        height, width, _ = img.shape
-
-        x_coordinates = [landmark.x for landmark in hand_landmarks.landmark]
-        y_coordinates = [landmark.y for landmark in hand_landmarks.landmark]
-
-        text_x = int(min(x_coordinates) * width)
-        text_y = int(min(y_coordinates) * height) - self.__HANDEDNESS_MARGIN
-
-        # Draw handedness (left or right hand) on the image.
-        text: str = f"{handedness[0].category_name}"
-
-        cv.putText(img,
-                   text,
-                   (text_x, text_y),
-                   self.__FONT,
-                   self.__FONT_SIZE,
-                   self.__HANDEDNESS_TEXT_COLOR,
-                   self.__FONT_THICKNESS,
-                   self.__LINE_TYPE
-                   )
+        self.__include_fps: bool = include_fps
+        self.__include_handedness: bool = include_handedness
+        self.__include_landmarks: bool = include_landmarks
+        self.__include_hand_bbox: bool = include_hand_bbox
+        self.__include_palm_bbox: bool = include_palm_bbox
 
     def __call__(self,
                  img: np.ndarray,
                  handedness_lst: List[List[Category]],
                  hand_landmarks_lst: List[landmark_pb2.NormalizedLandmarkList],
-                 include_fps: bool = True,
-                 include_handedness: bool = True,
-                 include_landmarks: bool = True,
                  *,
                  hand_landmarks_style: Mapping[int, DrawingSpec] = get_default_hand_landmarks_style(),
                  hand_connections_style: Mapping[Tuple[int, int], DrawingSpec] = get_default_hand_connections_style()
                  ) -> np.ndarray:
+        h, w, _ = img.shape
+        NormalizedLandmark = landmark_pb2.NormalizedLandmark
+
         if len(hand_landmarks_lst) > 0:
             # Loop through list of detected hands and landmarks.
             for hand_landmarks, handedness in zip(hand_landmarks_lst, handedness_lst):
-                if include_landmarks:
+                if self.__include_landmarks:
                     draw_landmarks(img,
                                    hand_landmarks,
                                    self.__HAND_CONNECTIONS,
@@ -94,18 +99,52 @@ class HandLandMarkVisualizer(object):
                                    hand_connections_style
                                    )
 
-                if include_handedness:
-                    self.__draw_handedness(img, handedness, hand_landmarks)
+                if self.__include_handedness or self.__include_hand_bbox:
+                    hand_bbox: List[Tuple, Tuple] = [
+                        (int(x * w), int(y * h)) for y, x in get_bbox_from_landmarks(hand_landmarks)
+                    ]
 
-        # Draw fps
-        if include_fps:
+                    if self.__include_handedness:
+                        cv.putText(img,
+                                   f"{handedness[0].category_name}",
+                                   (hand_bbox[0][0] - self.__BBOX_MARGIN, hand_bbox[0][1] - self.__BBOX_MARGIN),
+                                   self.__HANDEDNESS_FONT, self.__HANDEDNESS_FONT_SIZE,
+                                   self.__HANDEDNESS_TEXT_COLOR, self.__HANDEDNESS_FONT_THICKNESS,
+                                   self.__HANDEDNESS_LINE_TYPE
+                                   )
+
+                    if self.__include_hand_bbox:
+                        cv.rectangle(img,
+                                     (hand_bbox[0][0] - self.__BBOX_MARGIN, hand_bbox[0][1] - self.__BBOX_MARGIN),
+                                     (hand_bbox[1][0] + self.__BBOX_MARGIN, hand_bbox[1][1] + self.__BBOX_MARGIN),
+                                     self.__HAND_BBOX_COLOR,
+                                     self.__HAND_BBOX_THICKNESS,
+                                     self.__HAND_BBOX_LINE_TYPE
+                                     )
+
+                if self.__include_palm_bbox:
+                    palm_landmarks: Iterator[Tuple[int, NormalizedLandmark]] = filter(lambda x: x if x[0] in self.__PALM_IDX else None, enumerate(hand_landmarks.landmark))
+                    palm_landmarks: Iterator[NormalizedLandmark] = map(lambda x: x[1], palm_landmarks)
+
+                    palm_bbox: List[Tuple, Tuple] = get_bbox_from_landmarks(palm_landmarks)
+                    palm_bbox = [(int(x * w), int(y * h)) for y, x in palm_bbox]
+
+                    cv.rectangle(img,
+                                 (palm_bbox[0][0] + self.__BBOX_MARGIN, palm_bbox[0][1] + self.__BBOX_MARGIN),
+                                 (palm_bbox[1][0] - self.__BBOX_MARGIN, palm_bbox[1][1] - self.__BBOX_MARGIN),
+                                 self.__PALM_BBOX_COLOR,
+                                 self.__PALM_BBOX_THICKNESS,
+                                 self.__PALM_BBOX_LINE_TYPE
+                                 )
+
+        if self.__include_fps:
             cv.putText(img,
                        f"FPS: {int(self.__fps_calculator())}",
-                       (int(img.shape[0] * .05), int(img.shape[1] * .05)),
-                       self.__FONT,
-                       self.__FONT_SIZE,
+                       (int(w * self.__FPS_ORIG[0]), int(h * self.__FPS_ORIG[1])),
+                       self.__FPS_FONT,
+                       self.__FPS_FONT_SIZE,
                        self.__FPS_TEXT_COLOR,
-                       self.__FONT_THICKNESS,
-                       self.__LINE_TYPE
+                       self.__FPS_FONT_THICKNESS,
+                       self.__FPS_LINE_TYPE
                        )
         return img

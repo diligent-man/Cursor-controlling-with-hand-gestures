@@ -8,27 +8,8 @@ from mediapipe.framework.formats import landmark_pb2
 
 
 __all__ = [
-    "draw_control_region",
     "get_bbox_from_landmarks"
 ]
-
-
-def draw_control_region(img: np.ndarray,
-                        region_size: Tuple[int, int],
-                        color=(0, 0, 255)
-                        ):
-    """
-    :param img: bgr image with (H,W,C) shape
-    :param region_size: (H,W)
-    :param color: bgr color code
-    :return:
-    """
-    y_center, x_center = img.shape[0] // 2, img.shape[1] // 2
-
-    upper_left_y, upper_left_x = y_center - region_size[0] // 2, x_center - region_size[1] // 2
-    bottom_right_y, bottom_right_x = y_center + region_size[0] // 2, x_center + region_size[1] // 2
-
-    cv.rectangle(img, (upper_left_x, upper_left_y), (bottom_right_x, bottom_right_y), color, 1)
 
 
 def get_bbox_from_landmarks(

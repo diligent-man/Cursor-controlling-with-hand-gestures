@@ -15,7 +15,7 @@ def test_GlobalVar(env_path: str):
         "IS_MIRRORED": [bool, True],
         "WINDOW_NAME": [str, "Image"],
         "SCALE_FACTOR": [float, 0.5],
-        "SMOOTHEN_FACTOR": [float, 10.]
+        "SMOOTH_FACTOR": [float, 10.]
     }
 
     for k, v in gl.__dict__.items():

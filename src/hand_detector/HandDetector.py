@@ -10,11 +10,13 @@ import numpy as np
 from mediapipe import Image, ImageFormat
 from mediapipe.tasks.python.core.base_options import BaseOptions
 from mediapipe.tasks.python.vision.core.vision_task_running_mode import VisionTaskRunningMode as VMode
+
 from mediapipe.tasks.python.vision.hand_landmarker import (
     HandLandmarker,
     HandLandmarkerOptions,
     HandLandmarkerResult,
 )
+
 
 from .HandDetectorResult import HandDetectorResult
 
@@ -39,9 +41,8 @@ class HandDetector(object):
 
     To reconvert normalized coordinate into pixel-based location, we just respectively multiply x and y with image's width and height
     """
-    __default_ckpt: str = os.path.join(__package__, "..", "models", "hand_landmarker.task")
-    __finger_tip_idx = [0, 4, 8, 12, 16, 20]
     __is_mirrored: bool = True
+    __default_ckpt: str = os.path.join(__package__, "..", "models", "hand_landmarker.task")
 
     __result_queue: Queue[HandDetectorResult] = Queue()
 
@@ -56,7 +57,7 @@ class HandDetector(object):
                  min_hand_presence_confidence: float = .5,
                  min_tracking_confidence: float = 0.5,
                  return_fm: str = "bgr",
-                 is_mirrored: bool = True
+                 is_mirrored: bool = True,
                  ):
         assert return_fm in ("rgb", "bgr"), ValueError
         super(HandDetector, self).__init__()
@@ -71,8 +72,9 @@ class HandDetector(object):
         )
 
         self.__hand_detector = HandLandmarker.create_from_options(self.__opts)
-        self.__return_fm = return_fm
-        self.__is_mirrored = is_mirrored
+
+        self.__return_fm: str = return_fm
+        self.__is_mirrored: bool = is_mirrored
 
     def get_running_mode(self) -> VMode:
         return self.__opts.running_mode

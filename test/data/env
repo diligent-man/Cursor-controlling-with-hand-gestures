@@ -5,8 +5,8 @@ SCALE_FACTOR=0.5
 # Used for cursor movement smoothening
 PREVIOUS_X=0
 PREVIOUS_Y=0
-SMOOTHEN_FACTOR=10
+SMOOTH_FACTOR=10
 
 # The coord for rectangular box of control region
-FRAME_REDUCTION_X=550
-FRAME_REDUCTION_Y=300
+REGION_WIDTH=550
+REGION_HEIGHT=300

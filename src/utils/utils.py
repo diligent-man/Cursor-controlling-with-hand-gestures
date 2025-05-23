@@ -1,4 +1,5 @@
 import time
+import math
 from typing import Tuple
 
 
@@ -11,20 +12,11 @@ from screeninfo import get_monitors, Monitor
 
 
 __all__ = [
-    "control_region",
     "find_distance",
     "cursor_control",
     "get_primary_monitor_info",
     "get_screen_center_origin",
 ]
-
-
-def control_region(img, frame_reduction_x, frame_reduction_y, resized_width, resized_height):
-    red = (0, 0, 255)
-    upper_left_x, upper_left_y = frame_reduction_x, frame_reduction_y
-    bottom_right_x = resized_width - frame_reduction_x
-    bottom_right_y = resized_height - frame_reduction_y
-    cv.rectangle(img, (upper_left_x, upper_left_y), (bottom_right_x, bottom_right_y), red, 4)
 
 
 def find_distance(finger_1, finger_2, img, draw=True, r=15, t=3):
@@ -46,7 +38,7 @@ def cursor_control(img, fingers, landmarks_lst,
                    frame_reduction_x, frame_reduction_y,
                    frame_width, frame_height,
                    scr_width, scr_height,
-                   previous_x, previous_y, smoothen_factor,
+                   previous_x, previous_y, smooth_factor,
                    keyboard_controller, mouse_controller):
     thumb = fingers[0]
     fore_finger = fingers[1]
@@ -62,8 +54,8 @@ def cursor_control(img, fingers, landmarks_lst,
         y3 = np.interp(fore_finger_y, (frame_reduction_y, frame_height - frame_reduction_y), (0, scr_height))
 
         # smoothen movement
-        current_x = int(previous_x + (x3 - previous_x) / smoothen_factor)
-        current_y = int(previous_y + (y3 - previous_y) / smoothen_factor)
+        current_x = int(previous_x + (x3 - previous_x) / smooth_factor)
+        current_y = int(previous_y + (y3 - previous_y) / smooth_factor)
         previous_x, previous_y = current_x, current_y
 
         # Always keep cursor in host resolution

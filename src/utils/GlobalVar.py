@@ -50,6 +50,42 @@ class GlobalVar(object):
     BBOX_MARGIN: int
     PALM_MARGIN: int
 
+    __defaults: Dict[str, Tuple[Callable, Any]] = {
+        "IS_MIRRORED": (bool, True),
+        "WINDOW_NAME": (str, "App"),
+
+        "SCALE_FACTOR": (float, 0.5),
+        "CONTROL_REGION": (tuple, (300, 150)),
+
+        "PREVIOUS_X": (int, 0),
+        "PREVIOUS_Y": (int, 0),
+        "SMOOTH_FACTOR": (float, 10),
+
+        "HANDEDNESS_FONT": (int, 1),
+        "HANDEDNESS_FONT_SIZE": (int, 2),
+        "HANDEDNESS_TEXT_COLOR": (tuple, (0, 0, 255)),
+        "HANDEDNESS_FONT_THICKNESS": (int, 2),
+        "HANDEDNESS_LINE_TYPE": (int, 16),
+
+        "HAND_BBOX_COLOR": (tuple, (255, 0, 0)),
+        "HAND_BBOX_THICKNESS": (int, 1),
+        "HAND_BBOX_LINE_TYPE": (int, 16),
+
+        "PALM_BBOX_COLOR": (tuple, (0, 0, 255)),
+        "PALM_BBOX_THICKNESS": (int, 1),
+        "PALM_BBOX_LINE_TYPE": (int, 16),
+
+        "FPS_ORIG": (tuple, (.015, .05)),
+        "FPS_FONT": (int, 1),
+        "FPS_FONT_SIZE": (int, 2),
+        "FPS_TEXT_COLOR": (tuple, (0, 0, 255)),
+        "FPS_FONT_THICKNESS": (int, 2),
+        "FPS_LINE_TYPE": (int, 16),
+
+        "BBOX_MARGIN": (int, 10),
+        "PALM_MARGIN": (int, 35),
+    }
+
     def __init__(self, cfg: str | Path = None) -> None:
         def _getter(inst: GlobalVar, attr_name: str) -> Any | Exception:
             """
@@ -78,47 +114,11 @@ class GlobalVar(object):
             """
             raise AttributeError(f"'{attr_name}' attr is indelible")
 
-        _defaults: Dict[str, Tuple[Callable, Any]] = {
-            "IS_MIRRORED": (bool, True),
-            "WINDOW_NAME": (str, "App"),
-
-            "SCALE_FACTOR": (float, 0.5),
-            "CONTROL_REGION": (tuple, (300, 150)),
-
-            "PREVIOUS_X": (int, 0),
-            "PREVIOUS_Y": (int, 0),
-            "SMOOTH_FACTOR": (float, 10),
-
-            "HANDEDNESS_FONT": (int, 1),
-            "HANDEDNESS_FONT_SIZE": (int, 2),
-            "HANDEDNESS_TEXT_COLOR": (tuple, (0, 0, 255)),
-            "HANDEDNESS_FONT_THICKNESS": (int, 2),
-            "HANDEDNESS_LINE_TYPE": (int, 16),
-
-            "HAND_BBOX_COLOR": (tuple, (255, 0, 0)),
-            "HAND_BBOX_THICKNESS": (int, 1),
-            "HAND_BBOX_LINE_TYPE": (int, 16),
-
-            "PALM_BBOX_COLOR": (tuple, (0, 0, 255)),
-            "PALM_BBOX_THICKNESS": (int, 1),
-            "PALM_BBOX_LINE_TYPE": (int, 16),
-
-            "FPS_ORIG": (tuple, (.015, .05)),
-            "FPS_FONT": (int, 1),
-            "FPS_FONT_SIZE": (int, 2),
-            "FPS_TEXT_COLOR": (tuple, (0, 0, 255)),
-            "FPS_FONT_THICKNESS": (int, 2),
-            "FPS_LINE_TYPE": (int, 16),
-
-            "BBOX_MARGIN": (int, 10),
-            "PALM_MARGIN": (int, 35),
-        }
-
         cfg: Dict[str, Any] = self._read_cfg(cfg)
 
         # Dtype of collection's ele (e.g. list, tuple, ...) are not verified
         # Value range of all attrs is not appropriately checked
-        for name, val in _defaults.items():
+        for name, val in self.__defaults.items():
             read_val: Any = cfg.get(name, None)
 
             if type(read_val) != val[0]:

@@ -1,18 +1,24 @@
-from .GlobalVar import GlobalVar
 from .utils import (
-    control_region,
     find_distance,
     cursor_control,
     get_primary_monitor_info,
     get_screen_center_origin
 )
 
+from .drawing_ops import (
+    draw_control_region
+)
+
+from .image_ops import (
+    get_bbox_from_landmarks
+)
 
 __all__ = [
-    "GlobalVar",
-    "control_region",
     "find_distance",
     "cursor_control",
     "get_primary_monitor_info",
-    "get_screen_center_origin"
+    "get_screen_center_origin",
+
+    "draw_control_region",
+    "get_bbox_from_landmarks"
 ]
