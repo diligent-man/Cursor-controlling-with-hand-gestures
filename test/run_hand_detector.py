@@ -8,15 +8,13 @@ from dataclasses import asdict
 
 import cv2 as cv
 import numpy as np
-from dotenv import load_dotenv
 
 from mediapipe.tasks.python.vision.core.vision_task_running_mode import VisionTaskRunningMode as VMode
 
 
+from src.utils.GlobalVar import GlobalVar
+from src.utils import get_screen_center_origin
 from src.hand_detector import HandDetector, HandDetectorResult, HandLandMarkVisualizer
-from src.utils import get_screen_center_origin, GlobalVar
-
-load_dotenv("./data/env")
 
 
 def run_with_image(detector: HandDetector,
@@ -36,8 +34,6 @@ def run_with_image(detector: HandDetector,
         detected_result.img,
         detected_result.hand_landmarker_result.handedness,
         detected_result.hand_landmarker_result.hand_landmarks,
-        include_fps=False,
-        include_handedness=False
     )
 
     cv.imwrite(spath, img)
@@ -107,15 +103,20 @@ def run_with_live_video(gl: GlobalVar,
 
 
 def main() -> None:
-    gl = GlobalVar()
-    visualizer: HandLandMarkVisualizer = HandLandMarkVisualizer()
+    gl = GlobalVar("./data/cfg.yaml")
 
-    # run_with_image(
-    #     HandDetector(num_hands=2, running_mode=VMode.IMAGE),
-    #     visualizer,
-    #     "./data/hand_detector/image/two_hands.jpg",
-    #     "./result/hand_detector/image/two_hands.jpg"
-    # )
+    visualizer: HandLandMarkVisualizer = HandLandMarkVisualizer(
+        include_fps=False,
+        include_handedness=False,
+        include_hand_bbox=False
+    )
+
+    run_with_image(
+        HandDetector(num_hands=1, running_mode=VMode.IMAGE),
+        visualizer,
+        "./data/hand_detector/image/two_hands.jpg",
+        "./result/hand_detector/image/two_hands.jpg"
+    )
 
     run_with_video(
         HandDetector(num_hands=2, running_mode=VMode.VIDEO),
@@ -124,11 +125,11 @@ def main() -> None:
         "./result/hand_detector/video/one_hand.mp4"
     )
 
-    # run_with_live_video(
-    #     gl,
-    #     HandDetector(num_hands=2, running_mode=VMode.LIVE_STREAM),
-    #     visualizer,
-    # )
+    run_with_live_video(
+        gl,
+        HandDetector(num_hands=2, running_mode=VMode.LIVE_STREAM),
+        visualizer,
+    )
 
 
 if __name__ == "__main__":

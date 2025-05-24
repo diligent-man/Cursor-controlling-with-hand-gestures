@@ -6,6 +6,7 @@ from typing import List, Tuple, Mapping, Iterator
 # legacy api
 from mediapipe.framework.formats import landmark_pb2
 from mediapipe.python.solutions.drawing_utils import draw_landmarks
+
 from mediapipe.python.solutions.drawing_styles import (
     DrawingSpec,
     get_default_hand_landmarks_style,
@@ -15,16 +16,13 @@ from mediapipe.python.solutions.drawing_styles import (
 # new api
 from mediapipe.tasks.python.components.containers.category import Category
 
-from ..utils.GlobalVar import GlobalVar
 from ..utils import get_bbox_from_landmarks
+from ..utils.GlobalVar import gl
 from ..utils.FPSCalculator import FPSCalculator
 from .HandLandmarksConnections import HandLandmarksConnections
 
 
 __all__ = ["HandLandMarkVisualizer"]
-
-
-gl = globals().get("gl", GlobalVar())
 
 
 class HandLandMarkVisualizer(object):
@@ -70,6 +68,7 @@ class HandLandMarkVisualizer(object):
                  include_palm_bbox: bool = True
                  ) -> None:
         super(HandLandMarkVisualizer, self).__init__()
+        
         self.__legacy_mediapipe_api: bool = legacy_mediapipe_api
         self.__include_fps: bool = include_fps
         self.__include_handedness: bool = include_handedness
@@ -123,7 +122,8 @@ class HandLandMarkVisualizer(object):
                                      )
 
                 if self.__include_palm_bbox:
-                    palm_landmarks: Iterator[Tuple[int, NormalizedLandmark]] = filter(lambda x: x if x[0] in self.__PALM_IDX else None, enumerate(hand_landmarks.landmark))
+                    palm_landmarks: Iterator[Tuple[int, NormalizedLandmark]] = filter(
+                        lambda x: x if x[0] in self.__PALM_IDX else None, enumerate(hand_landmarks.landmark))
                     palm_landmarks: Iterator[NormalizedLandmark] = map(lambda x: x[1], palm_landmarks)
 
                     palm_bbox: List[Tuple, Tuple] = get_bbox_from_landmarks(palm_landmarks)

@@ -20,7 +20,7 @@ from mediapipe.tasks.python.vision.hand_landmarker import HandLandmark, HandLand
 from mediapipe.tasks.python.vision.core.vision_task_running_mode import VisionTaskRunningMode as VMode
 
 
-from .utils.GlobalVar import GlobalVar
+from .utils.GlobalVar import gl
 
 from .hand_detector import (
     HandDetector,
@@ -36,9 +36,6 @@ from .utils import (
 
 
 __all__ = ["App"]
-
-
-gl = globals().get("gl", GlobalVar())
 
 
 class App(object):
@@ -221,7 +218,7 @@ class App(object):
                 self.__hand_detector.detect(frame, int(time.time() * 1000))
                 detected_result: HandDetectorResult = self.__hand_detector.get_result()
 
-                draw_control_region(detected_result.img, gl.CONTROL_REGION)
+                # draw_control_region(detected_result.img, gl.CONTROL_REGION)
 
                 # Check which fingers are up
                 # fingers, total_fingers = self._check_fingers_up(

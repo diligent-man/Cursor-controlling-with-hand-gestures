@@ -5,12 +5,11 @@ from warnings import warn
 from functools import partial
 from typing import Dict, Tuple, Any, Callable
 
-
 import yaml
 
 __package__ = Path(__file__).parent.resolve()
 
-__all__ = ["GlobalVar"]
+__all__ = ["gl"]
 
 
 class GlobalVar(object):
@@ -136,11 +135,11 @@ class GlobalVar(object):
 
     @staticmethod
     def _read_cfg(cfg: str | Path) -> Dict[str, Any]:
-        if cfg is not None:
+        if os.environ.get("CONFIG_PATH", None) or cfg:
             cfg: Path = Path(cfg)
             assert cfg.exists(), FileNotFoundError
         else:
-            cfg: str = os.path.join(__package__.parent, "cfg.yaml")
+            cfg: str = os.path.join(__package__.parent.parent, "config", "app.yaml")
 
         with open(cfg) as stream:
             try:
@@ -162,3 +161,6 @@ class GlobalVar(object):
             else:
                 msg += ")"
         return msg
+
+
+gl: GlobalVar = GlobalVar()
