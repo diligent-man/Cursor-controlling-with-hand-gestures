@@ -39,6 +39,13 @@ class GlobalVar(object):
     PALM_BBOX_THICKNESS: int
     PALM_BBOX_LINE_TYPE: int
 
+    FINGER_UP_ORIG: tuple[float, float]
+    FINGER_UP_FONT: int
+    FINGER_UP_FONT_SIZE: int
+    FINGER_UP_TEXT_COLOR: tuple[int, int, int]
+    FINGER_UP_FONT_THICKNESS: int
+    FINGER_UP_LINE_TYPE: int
+
     FPS_ORIG: tuple[int, int]
     FPS_FONT: int
     FPS_FONT_SIZE: int
@@ -48,6 +55,9 @@ class GlobalVar(object):
 
     BBOX_MARGIN: int
     PALM_MARGIN: int
+
+    THUMB_X_OFFSET: float
+    THUMB_Y_OFFSET: float
 
     __defaults: Dict[str, Tuple[Callable, Any]] = {
         "IS_MIRRORED": (bool, True),
@@ -74,6 +84,13 @@ class GlobalVar(object):
         "PALM_BBOX_THICKNESS": (int, 1),
         "PALM_BBOX_LINE_TYPE": (int, 16),
 
+        "FINGER_UP_ORIG": (tuple, (.015, .1)),
+        "FINGER_UP_FONT": (int, 1),
+        "FINGER_UP_FONT_SIZE": (int, 2),
+        "FINGER_UP_TEXT_COLOR": (tuple, (0, 0, 255)),
+        "FINGER_UP_FONT_THICKNESS": (int, 2),
+        "FINGER_UP_LINE_TYPE": (int, 16),
+
         "FPS_ORIG": (tuple, (.015, .05)),
         "FPS_FONT": (int, 1),
         "FPS_FONT_SIZE": (int, 2),
@@ -83,6 +100,9 @@ class GlobalVar(object):
 
         "BBOX_MARGIN": (int, 10),
         "PALM_MARGIN": (int, 35),
+
+        "THUMB_X_OFFSET": (float, 0.035),
+        "THUMB_Y_OFFSET": (float, 0.035)
     }
 
     def __init__(self, cfg: str | Path = None) -> None:

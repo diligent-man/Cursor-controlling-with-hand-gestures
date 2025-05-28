@@ -18,9 +18,9 @@ def draw_control_region(img: np.ndarray,
     :param color: bgr color code
     :return:
     """
-    y_center, x_center = img.shape[0] // 2, img.shape[1] // 2
+    cy, cx = img.shape[0] // 2, img.shape[1] // 2
 
-    upper_left_y, upper_left_x = y_center - region_size[1] // 2, x_center - region_size[0] // 2
-    bottom_right_y, bottom_right_x = y_center + region_size[1] // 2, x_center + region_size[0] // 2
+    upper_left_y, upper_left_x = cy - region_size[1] // 2, cx - region_size[0] // 2
+    bottom_right_y, bottom_right_x = cy + region_size[1] // 2, cx + region_size[0] // 2
 
     cv.rectangle(img, (upper_left_x, upper_left_y), (bottom_right_x, bottom_right_y), color, 1)

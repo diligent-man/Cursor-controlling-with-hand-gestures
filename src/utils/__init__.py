@@ -10,6 +10,8 @@ from .drawing_ops import (
 )
 
 from .image_ops import (
+    display,
+    denormalize_coord,
     get_bbox_from_landmarks
 )
 
@@ -20,5 +22,8 @@ __all__ = [
     "get_screen_center_origin",
 
     "draw_control_region",
+
+    "display",
+    "denormalize_coord",
     "get_bbox_from_landmarks"
 ]

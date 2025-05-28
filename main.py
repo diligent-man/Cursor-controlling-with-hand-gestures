@@ -1,11 +1,5 @@
-import os
 import asyncio
 
-from pathlib import Path
-from pprint import pprint as pp
-
-
-import cv2 as cv
 
 from dotenv import load_dotenv
 from mediapipe.tasks.python.vision.core.vision_task_running_mode import VisionTaskRunningMode as VMode
@@ -20,16 +14,16 @@ load_dotenv("./.env")
 
 async def main():
     app = App(
-        HandDetector(None, VMode.VIDEO, 1),
+        HandDetector(None, VMode.VIDEO, 2),
         HandLandMarkVisualizer(
-            include_fps=False,
-            include_handedness=False,
+            include_fps=True,
+            include_handedness=True,
             include_landmarks=True,
-            include_hand_bbox=False
+            include_hand_bbox=True
         )
     )
 
-    await app.run("video", "./test/data/hand_detector/one_hand.mp4")
+    await app.run("video", "./test/data/hand_detector/two_hands.mp4")
     # await app.run("live_stream", 0)
 
 
@@ -42,4 +36,3 @@ if __name__ == "__main__":
 
     # TODO: Check Body Pre Focusing mechanism for distant detection (2m < D < 10m)
     #     https: // github.com / geaxgx / depthai_hand_tracker / tree / main
-    # add env var read for GlobalVar

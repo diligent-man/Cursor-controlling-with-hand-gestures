@@ -16,9 +16,12 @@ from mediapipe.python.solutions.drawing_styles import (
 # new api
 from mediapipe.tasks.python.components.containers.category import Category
 
+
 from ..utils import get_bbox_from_landmarks
+
 from ..utils.GlobalVar import gl
 from ..utils.FPSCalculator import FPSCalculator
+
 from .HandLandmarksConnections import HandLandmarksConnections
 
 
@@ -39,6 +42,13 @@ class HandLandMarkVisualizer(object):
     __PALM_BBOX_COLOR: Tuple[int, int, int] = gl.PALM_BBOX_COLOR
     __PALM_BBOX_THICKNESS = gl.PALM_BBOX_THICKNESS
     __PALM_BBOX_LINE_TYPE = gl.PALM_BBOX_LINE_TYPE
+
+    __FINGER_UP_ORIG: Tuple[float, float] = gl.FINGER_UP_ORIG
+    __FINGER_UP_FONT: int = gl.FINGER_UP_FONT
+    __FINGER_UP_FONT_SIZE: int = gl.FINGER_UP_FONT_SIZE
+    __FINGER_UP_TEXT_COLOR: Tuple[int, int, int] = gl.FINGER_UP_TEXT_COLOR
+    __FINGER_UP_FONT_THICKNESS: int = gl.FINGER_UP_FONT_THICKNESS
+    __FINGER_UP_LINE_TYPE: int = gl.FINGER_UP_LINE_TYPE
 
     __FPS_ORIG: Tuple[float, float] = gl.FPS_ORIG
     __FPS_FONT: int = gl.FPS_FONT
@@ -62,24 +72,27 @@ class HandLandMarkVisualizer(object):
     def __init__(self,
                  legacy_mediapipe_api: bool = True,
                  include_fps: bool = True,
-                 include_handedness: bool = True,
                  include_landmarks: bool = True,
                  include_hand_bbox: bool = True,
-                 include_palm_bbox: bool = True
+                 include_palm_bbox: bool = True,
+                 include_finger_up: bool = True,
+                 include_handedness: bool = True,
                  ) -> None:
         super(HandLandMarkVisualizer, self).__init__()
         
         self.__legacy_mediapipe_api: bool = legacy_mediapipe_api
         self.__include_fps: bool = include_fps
-        self.__include_handedness: bool = include_handedness
         self.__include_landmarks: bool = include_landmarks
         self.__include_hand_bbox: bool = include_hand_bbox
         self.__include_palm_bbox: bool = include_palm_bbox
+        self.__include_finger_up: bool = include_finger_up
+        self.__include_handedness: bool = include_handedness
 
     def __call__(self,
                  img: np.ndarray,
                  handedness_lst: List[List[Category]],
                  hand_landmarks_lst: List[landmark_pb2.NormalizedLandmarkList],
+                 finger_up_lst: List[List[bool]] = None,
                  *,
                  hand_landmarks_style: Mapping[int, DrawingSpec] = get_default_hand_landmarks_style(),
                  hand_connections_style: Mapping[Tuple[int, int], DrawingSpec] = get_default_hand_connections_style()
@@ -146,5 +159,22 @@ class HandLandMarkVisualizer(object):
                        self.__FPS_TEXT_COLOR,
                        self.__FPS_FONT_THICKNESS,
                        self.__FPS_LINE_TYPE
+                       )
+
+        if self.__include_finger_up:
+            if finger_up_lst is None:
+                txt: str = "Fingers: None"
+            else:
+                total_fingers = sum([sum(is_up_fingers) for is_up_fingers in finger_up_lst])
+                txt: str = f"Fingers: {total_fingers}"
+
+            cv.putText(img,
+                       txt,
+                       (int(w * self.__FINGER_UP_ORIG[0]), int(h * self.__FINGER_UP_ORIG[1])),
+                       self.__FINGER_UP_FONT,
+                       self.__FINGER_UP_FONT_SIZE,
+                       self.__FINGER_UP_TEXT_COLOR,
+                       self.__FINGER_UP_FONT_THICKNESS,
+                       self.__FINGER_UP_LINE_TYPE
                        )
         return img
